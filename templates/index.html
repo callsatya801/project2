@@ -1,0 +1,96 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Chatterbox - {{currentChannel}}
+{% endblock %}
+
+
+{% block body %}
+	<!-- Banner Navigationbar -->
+	<nav class="navbar navbar-dark sticky-top bg-primary flex-md-nowrap p-0">
+		<a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#"><i class="material-icons">group</i> Chatterbox</a>
+		    <span class="navbar-text text-white" style="padding-right: 30px;"><i class="material-icons">person</i>User: <b>{{userName}}</b></span>
+	</nav>
+
+	<!-- container for page Navigationbar -->
+	<div id="pageArea" class="container-fluid">
+		<div class="row">
+
+      <div id="sideNavArea" class="col-2">
+			<nav class="col-sm-2 d-none d-md-block bg-light sidebar">
+				<div class="sidebar-sticky">
+					<h3 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 text-muted"><span>Your Channels</span></h3>
+					<hr>
+					<ul id="subscribedChannels" class="nav flex-column  mb-2">
+						{% for channel in subscrChannels %}
+						<li class="nav-item">
+							<a class="nav-link active" href="" data-channelID="{{channel}}">{{channel}}</a>
+						</li>
+						{% endfor %}
+					</ul>
+					<h3 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 text-muted"><span>Available Channels</span></h3>
+					<hr>
+					<ul id="availableChannels" class="nav flex-column mb-2">
+						{% for channel in allChannels %}
+						<li class="nav-item">
+							<a class="nav-link" href="">{{channel}}</a>
+						</li>
+						{% endfor %}
+					</ul>
+					<h3 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 text-muted"><span>Create new Channel</span></h3>
+					<hr>
+					<form id="newChannelForm">
+						<div  class="input-group">
+							<input id="newChannel" class="form-control input-lg" placeholder="Enter new channel name.." type="text">
+							<div class="input-group-append">
+								<button class="btn btn-outline-secondary" type="button">Create</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</nav>
+    </div>
+
+    	<div class="col-8 pt-3 px-4" >
+        <div id="chatMessagesArea" class="card border-0" style="height: 87vh;">
+          <div class="card-header bg-dark text-white ">
+            Current #Channel# - {{currentChannel}}
+          </div>
+          <div id="chatMessages" class="card-body" style="overflow-y:auto; height: 100%;">
+            <!--Add Chat Line items here -->
+					 <ul id="chatMsgList">
+						{% for msg in channelChatMsgs %}
+						  <li> <b>{{msg.user}}</b>({{msg.msgTime}}):{{msg.message}} </li>
+						{% endfor %}
+					 </ul>
+          </div>
+        </div>
+
+        <!-- Usermessage sent -->
+				<nav class="navbar ml-sm-auto col-lg-10 fixed-bottom navbar-light bg-light">
+					<form>
+						<div class="input-group">
+							<input aria-describedby="basic-addon2" aria-label="newMsg" class="form-control input-lg" placeholder="Enter message here ...." type="text">
+							<div class="input-group-append">
+								<button class="btn btn-outline-secondary" type="button">Send</button>
+							</div>
+						</div>
+					</form>
+				</nav>
+			</div>
+      <div class="col-2 pt-3 px-1" >
+        <div class="card border-0 card text-white bg-info mb-3" style="height: 87vh;">
+          <div class="card-header h5">Members:</div>
+            <div id="usersArea" class="card-body">
+              <ul id="oUsers">
+								{% for othUser in channelUsers %}
+								 <li> <b>{{othUser}}</b> </li>
+							   {% endfor %}
+              </ul>
+            </div>
+        </div>
+        </div>
+    </div>
+	</div>
+
+{% endblock %}
