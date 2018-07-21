@@ -17,9 +17,74 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js">	</script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js">	</script>
 
+    <!-- Handlebars template JS-->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.11/handlebars.min.js"></script>
+
     <!-- Chatterbox Application Java Script Logic is all defined in JS-->
     <script src="{{ url_for('static', filename='index.js') }}">	</script>
-    <title>{% block title %}{% endblock %}</title>
+    <title id="title">{% block title %}{% endblock %}</title>
+
+    <!-- Channel Members-->
+    <script id="s_cMembers" type="text/template">
+    {% raw -%}
+        <li>
+             You rolled:
+
+                  {{#each values}}
+                      <img alt="{{ this }}" title="{{ this }}" src="img/{{ this }}.png">
+                  {{/each}}
+                  (Total: {{ total }})
+
+              </li>
+    {%- endraw %}
+    </script>
+
+
+    <!-- Channel Messages-->
+    <script id="s_cMsgs" type="text/template">
+    {% raw -%}
+        <li>
+             You rolled:
+
+                  {{#each values}}
+                      <img alt="{{ this }}" title="{{ this }}" src="img/{{ this }}.png">
+                  {{/each}}
+                  (Total: {{ total }})
+
+              </li>
+    {%- endraw %}
+    </script>
+
+    <!-- User Channels (Your Channels) -->
+    <script id="s_yChannels" type="text/template">
+    {% raw -%}
+        <li>
+             You rolled:
+
+                  {{#each values}}
+                      <img alt="{{ this }}" title="{{ this }}" src="img/{{ this }}.png">
+                  {{/each}}
+                  (Total: {{ total }})
+
+              </li>
+    {%- endraw %}
+    </script>
+
+    <!-- Available Channels (All Channels) -->
+    <script id="s_aChannels" type="text/template">
+    {% raw -%}
+        <li>
+             You rolled:
+
+                  {{#each values}}
+                      <img alt="{{ this }}" title="{{ this }}" src="img/{{ this }}.png">
+                  {{/each}}
+                  (Total: {{ total }})
+
+              </li>
+    {%- endraw %}
+    </script>
+
 </head>
 
     <body>

@@ -22,6 +22,12 @@ channel_list=[]
 currChannel=""
 userName=""
 
+# set default user-testing
+userName='user1'
+
+# set current Channel
+currChannel = 'general'
+
 
 # list of all users
 users=[]
@@ -56,35 +62,19 @@ for channel in channel_list:
     for i in range(0,50):
         userx ='user'+str(floor(random()*6))
         msgTime= datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p")
-        msg = f"message from : {userx} ---------- message:{i} ---"
+        msg = f"message from : {userx} ---------- message:{i} --- for channel: {channel}"
         chatMessage.append({'user':userx,'msgTime':msgTime, 'message':msg})
     channel_chatMessages.append({'channel':channel, 'messages':chatMessage})
 
-print("\n")
-print(f"users:{users}")
-print("\n")
-print(f"channel_list:{channel_list}")
-print("\n")
-print(f"user_channels:{user_channels}")
-print("\n")
-print(f"channel_users:{channel_users}")
-print("\n")
-#print(f"channel_chatMessages:{channel_chatMessages}")
-#print("\n")
-
-# set default user-testing
-#userName='user0'
-userName='user1'
-
-# set current Channel
-#currChannel = 'general'
-currChannel = 'channel_0'
 
 def reload():
 
-    subscrChannels=[]
-    channelUsers=[]
-    channelMessages=[]
+    global subscrChannels
+    global channelUsers
+    global channelMessages
+    global channel_list
+    global currChannel
+    global userName
 
     # Extract the subscription channels by User
     # looping thru the list and extract the list
@@ -103,7 +93,7 @@ def reload():
             channelUsers = x["users"]
             break
 
-    print(f"currChannel: {currChannel} and channelUsers:{channelUsers}")
+    #print(f"currChannel: {currChannel} and channelUsers:{channelUsers}")
 
     # Extract the all messages for a given channel
     # looping thru the list and extract the messages list
@@ -112,9 +102,8 @@ def reload():
             channelMessages = x["messages"]
             break
 
-    print(f"currChannel: {currChannel} and channelMessages:{channelMessages}")
+    #print(f"currChannel: {currChannel} and channelMessages:{channelMessages}")
     return
-
 
 
 @app.route("/")
@@ -125,11 +114,10 @@ def index():
     userName='user1'
 
     # set current Channel
-    #currChannel = 'general'
-    currChannel = 'channel_0'
+    currChannel = 'general'
     #re-load the lists to send as parameters
     reload()
-    print("I'm in index method ")
+    print(f"I'm in index method with channel list: {subscrChannels}")
     return render_template("index.html", userName=userName, allChannels=channel_list, subscrChannels=subscrChannels, currentChannel= currChannel,channelUsers=channelUsers, channelChatMsgs=channelMessages )
 
 
@@ -139,4 +127,13 @@ def switchChannel(channel_ID):
     currChannel = channel_ID
     #re-load the lists to send as parameters
     reload()
-    return render_template("index.html", userName=userName, allChannels=channel_list, subscrChannels=subscrChannels, currentChannel= currChannel,channelUsers=channelUsers, channelChatMsgs=channelMessages )
+    print(f"I'm in switchChannel ChannelID:{channel_ID} with channel list: {subscrChannels}")
+    channelDict={
+        "userName": userName,
+        "allChannels": channel_list,
+        "subscrChannels": subscrChannels,
+        "currentChannel": currChannel,
+        "channelUsers": channelUsers,
+        "channelChatMsgs": channelMessages
+    }
+    return jsonify (channelDict)

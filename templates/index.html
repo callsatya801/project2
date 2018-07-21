@@ -21,15 +21,20 @@
 				<div class="sidebar-sticky">
 					<h3 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 text-muted"><span>Your Channels</span></h3>
 					<hr>
+					<div id="yChannels">
 					<ul id="subscribedChannels" class="nav flex-column  mb-2">
 						{% for channel in subscrChannels %}
 						<li class="nav-item">
-							<a class="nav-link active" href="" data-channelID="{{channel}}">{{channel}}</a>
+							<a class="nav-link active" href="" data-channelid="{{channel}}">{{channel}}</a>
 						</li>
 						{% endfor %}
 					</ul>
+					</div>
+
 					<h3 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 text-muted"><span>Available Channels</span></h3>
 					<hr>
+
+					<div id="aChannels">
 					<ul id="availableChannels" class="nav flex-column mb-2">
 						{% for channel in allChannels %}
 						<li class="nav-item">
@@ -37,6 +42,8 @@
 						</li>
 						{% endfor %}
 					</ul>
+					</div>
+
 					<h3 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 text-muted"><span>Create new Channel</span></h3>
 					<hr>
 					<form id="newChannelForm">
@@ -53,7 +60,7 @@
 
     	<div class="col-8 pt-3 px-4" >
         <div id="chatMessagesArea" class="card border-0" style="height: 87vh;">
-          <div class="card-header bg-dark text-white ">
+          <div id="currChannelHeader" class="card-header bg-dark text-white ">
             Current #Channel# - {{currentChannel}}
           </div>
           <div id="chatMessages" class="card-body" style="overflow-y:auto; height: 100%;">
