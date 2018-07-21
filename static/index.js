@@ -23,7 +23,7 @@ function load_page(name) {
         document.querySelector('#title').innerHTML = `Chatterbox - ${responseData.currentChannel}`;
         document.querySelector('#currChannelHeader').innerHTML = `Current #Channel# - ${responseData.currentChannel}`;
 
-        var idList=['#chatMsgList', '#aChannels','#yChannels', '#oUsers' ];
+        var idList=['#chatMsgList', '#availableChannels','#subscribedChannels', '#oUsers' ];
         var i ;
         for (i=0; i < idList.length; i++)
         {
@@ -32,6 +32,17 @@ function load_page(name) {
         	console.log(element);
         	if(element)
         	  {element.remove(); };
+        };
+
+         //Loop thru the Parent IDs and add them to page along with child IDs
+        var pIdList=['#chatMessages', '#aChannels','#yChannels', '#usersArea' ];
+        for (i=0; i < pIdList.length; i++)
+        {
+        	console.log(pIdList[i]);
+        	var element = document.querySelector(pIdList[i]);
+        	console.log(element);
+        //	if(element)
+        //	  {element.remove(); };
         };
 
         console.log(responseData);
