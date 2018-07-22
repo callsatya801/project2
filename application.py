@@ -72,6 +72,7 @@ def reload():
     global subscrChannels
     global channelUsers
     global channelMessages
+    global channel_chatMessages
     global channel_list
     global currChannel
     global userName
@@ -124,10 +125,13 @@ def index():
 @app.route("/<channel_ID>")
 def switchChannel(channel_ID):
     #set the current channel to new Channel.
+    global currChannel
+    global userName
+
     currChannel = channel_ID
     #re-load the lists to send as parameters
     reload()
-    print(f"I'm in switchChannel ChannelID:{channel_ID} with channel list: {subscrChannels}")
+    print(f"I'm in switchChannel ChannelID:{channel_ID} with channel messages: {channelMessages[0]}")
     channelDict={
         "userName": userName,
         "allChannels": channel_list,
@@ -137,3 +141,38 @@ def switchChannel(channel_ID):
         "channelChatMsgs": channelMessages
     }
     return jsonify (channelDict)
+
+@app.route("/create", methods=["POST"])
+def createChannel():
+    # append the new channel if valid to channel list
+    global channel_list
+
+    #get the new channelName
+    nChannel = request.form.get("newChannel")
+    print(f"Inside Create Routine - with form value - {nChannel}")
+
+
+    if nChannel in channel_list:
+        print(f"Inside Create Routine - with form value - {nChannel} - Success-false")
+        return jsonify({"success": False})
+    else:
+        channel_list.append(nChannel)
+        print(f"Inside Create Routine - with form value - {nChannel} - Success-true")
+        return jsonify({"success": True, "newChannel":nChannel})
+
+@socketio.on("connect")
+def on_connect():
+    print(f'Satya: serverside onconnect socket invoked - {request.sid}')
+
+@socketio.on("newMsg")
+def on_newMsg(data):
+    print(f'Satya: serverside on newMsg  - {data}')
+    # Add the new Message to MessageHistory for a given channel
+    global channel_chatMessages
+    msgTime= datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p")
+    chatMsg = {'user':data["User"],'msgTime':msgTime, 'message':data["newMsg"]}
+    channel_chatMessages['channel'=='general']['messages'].append(chatMsg)
+    print(f"channel messages - {channel_chatMessages['channel'=='general']['messages']}")
+
+    #Broadcast the message to the channel
+    emit("appendNewMsg",chatMsg, broadcast=True )

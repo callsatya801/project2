@@ -20,68 +20,64 @@
     <!-- Handlebars template JS-->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.11/handlebars.min.js"></script>
 
+	<!-- socket IO java script-->
+	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+
     <!-- Chatterbox Application Java Script Logic is all defined in JS-->
     <script src="{{ url_for('static', filename='index.js') }}">	</script>
     <title id="title">{% block title %}{% endblock %}</title>
 
     <!-- Channel Members-->
-    <script id="s_cMembers" type="text/template">
+    <script id="t_cMembers" type="text/template">
     {% raw -%}
-        <li>
-             You rolled:
-
-                  {{#each values}}
-                      <img alt="{{ this }}" title="{{ this }}" src="img/{{ this }}.png">
+        <ul id="{{ id }}">
+                  {{#each contents}}
+                  <li> <b>{{this}}</b> </li>
                   {{/each}}
-                  (Total: {{ total }})
-
-              </li>
+          </ul>
     {%- endraw %}
     </script>
 
 
     <!-- Channel Messages-->
-    <script id="s_cMsgs" type="text/template">
+    <script id="t_cMsgs" type="text/template">
     {% raw -%}
-        <li>
-             You rolled:
+       <div id="{{ id }}" class="list-group">
+                  {{#each contents}}
+                  <text class="border-0 list-group-item flex-column align-items-start">
+                  <div class="d-flex w-100 ">
+                                <small class="mb-0 font-weight-bold" style="padding-right:10px">{{this.user}}</small>
+                                <small class="text-muted">({{this.msgTime}})</small>
+                            </div>
 
-                  {{#each values}}
-                      <img alt="{{ this }}" title="{{ this }}" src="img/{{ this }}.png">
+                            <p style="font-size:120%">{{this.message}}</p>
+                        </text>
                   {{/each}}
-                  (Total: {{ total }})
+          </div>
 
-              </li>
     {%- endraw %}
     </script>
 
     <!-- User Channels (Your Channels) -->
-    <script id="s_yChannels" type="text/template">
+    <script id="t_yChannels" type="text/template">
     {% raw -%}
-        <li>
-             You rolled:
-
-                  {{#each values}}
-                      <img alt="{{ this }}" title="{{ this }}" src="img/{{ this }}.png">
+        <ul id="{{ id }}" class="nav flex-column  mb-2">
+                  {{#each contents}}
+							<a class="nav-link active" href="" data-channelid="{{this}}">{{this}}</a>
                   {{/each}}
-                  (Total: {{ total }})
+          </ul>
 
-              </li>
     {%- endraw %}
     </script>
 
     <!-- Available Channels (All Channels) -->
-    <script id="s_aChannels" type="text/template">
+    <script id="t_aChannels" type="text/template">
     {% raw -%}
-        <li>
-             You rolled:
-
-                  {{#each values}}
-                      <img alt="{{ this }}" title="{{ this }}" src="img/{{ this }}.png">
+         <ul id="{{ id }}" class="nav flex-column mb-2">
+                  {{#each contents}}
+							<a class="nav-link">{{this}}</a>
                   {{/each}}
-                  (Total: {{ total }})
-
-              </li>
+          </ul>
     {%- endraw %}
     </script>
 
