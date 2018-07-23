@@ -4,16 +4,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Connect to websocket
       var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
 
-      socket.on('connect', ()=> {console.log('connected thru web scocket')}
-          );
-
-        socket.on('appendNewMsg', data=>
+       socket.on('appendNewMsg', data=>
                     {
                      console.log(`data received thru appendNewMsg - ${data.user} -${data.msgTime} - ${data.message}`);
 
                      //append the new message to the existing messages
                      const li = document.createElement('li');
-                     li.innerHTML = `appendNewMsg:  ${data.user} -${data.msgTime} - ${data.message}`;
+                     li.innerHTML = `<strong>${data.user}:</strong> <div class="text-muted">${data.msgTime}</div> <p class="card-text">${data.message}</p> `;
                      document.querySelector('#chatMsgList').append(li);
 
                      //after adding new message - scroll
@@ -46,6 +43,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
           );
 
+        socket.on('roomUsers', data=>
+                    {
+                     console.log(`data received thru roomUsers - ${data}`);
+                }
+          );
 
     // Socket-io - specific code
 
@@ -68,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelector('#pageArea').style.display="block";
 
             document.querySelector('#dUserName').innerHTML=newUser;
-            console.log(`trying to set the value of new display name: ${newUser} for element ${elment}`);
+            console.log(`trying to set the value of new display name: ${newUser}`);
 
            }
            else
@@ -95,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const nChatMsg = document.querySelector('#newChatMsg').value;
           // reset the value
           document.querySelector('#newChatMsg').value='';
-          socket.emit('newMsg',{'User':'xxxx','newMsg':nChatMsg });
+          socket.emit('newMsg',{'room':'general','newMsg':nChatMsg });
 
           //return false - enforce not to refresh the page
           return false;
@@ -185,7 +187,7 @@ function load_page(name) {
         document.querySelector('#title').innerHTML = `Chatterbox - ${responseData.currentChannel}`;
         document.querySelector('#currChannelHeader').innerHTML = `Current #Channel# - ${responseData.currentChannel}`;
 
-        var idList=['#chatMsgList', '#availableChannels','#subscribedChannels', '#oUsers' ];
+        var idList=['#chatMsgList', '#availableChannels', '#oUsers' ];
         var i ;
         for (i=0; i < idList.length; i++)
         {
@@ -197,10 +199,10 @@ function load_page(name) {
         };
 
          //Loop thru the Parent IDs and add them to page along with child IDs
-        var pIdList=['#chatMessages', '#aChannels','#yChannels', '#usersArea' ];
-        var pTemplateList=['#t_cMsgs', '#t_aChannels','#t_yChannels', '#t_cMembers' ];
-        var idList_to_Add=['chatMsgList', 'availableChannels','subscribedChannels', 'oUsers' ];
-        var pContentList=[responseData.channelChatMsgs, responseData.allChannels,responseData.subscrChannels,responseData.channelUsers];
+        var pIdList=['#chatMessages', '#aChannels', '#usersArea' ];
+        var pTemplateList=['#t_cMsgs', '#t_aChannels' ,'#t_cMembers' ];
+        var idList_to_Add=['chatMsgList', 'availableChannels', 'oUsers' ];
+        var pContentList=[responseData.channelChatMsgs, responseData.allChannels, responseData.channelUsers];
         for (i=0; i < pIdList.length; i++)
         {
         	console.log(pIdList[i]);

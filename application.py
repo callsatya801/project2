@@ -6,8 +6,8 @@ import datetime
 from random import random
 from math import floor
 
-from flask import Flask, jsonify, render_template, request
-from flask_socketio import SocketIO, emit
+from flask import Flask, jsonify, render_template, request, session
+from flask_socketio import SocketIO, emit, join_room, leave_room
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
@@ -16,128 +16,29 @@ socketio = SocketIO(app)
 # Global lists
 users=[]
 
-
-subscrChannels=[]
-channelUsers=[]
-channelMessages=[]
-channel_list=[]
-
-currChannel=""
-userName=""
-
-# set default user-testing
-userName='user1'
+# list of all channels
+channel_list = ['general','Channel2']
+#most recent messages -- 100
+channel_chatMessages = []
 
 # set current Channel
 currChannel = 'general'
 
-
-# list of all channels
-channel_list = ['general']
-for i in range(0,5):
-    channel_list.append('channel_'+str(i))
-
-
-#Users Channel List
-user_channels=[]
-for user in users:
-   user_channels.append({'user':user, 'channels':channel_list})
-
-#Channel Users List
-channel_users=[]
-for channel in channel_list:
-    cUsers = []
-    for i in range(floor(random()*6)):
-        cUsers.append('user'+str(i))
-    channel_users.append({'channel':channel, 'users':cUsers})
-
-
-#most recent messages -- 100
-channel_chatMessages = []
-for channel in channel_list:
-    chatMessage=[]
-    for i in range(0,50):
-        userx ='user'+str(floor(random()*6))
-        msgTime= datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p")
-        msg = f"message from : {userx} ---------- message:{i} --- for channel: {channel}"
-        chatMessage.append({'user':userx,'msgTime':msgTime, 'message':msg})
-    channel_chatMessages.append({'channel':channel, 'messages':chatMessage})
-
-
-def reload():
-
-    global subscrChannels
-    global channelUsers
-    global channelMessages
-    global channel_chatMessages
-    global channel_list
-    global currChannel
-    global userName
-
-    # Extract the subscription channels by User
-    # looping thru the list and extract the list
-    for x in user_channels:
-        if x["user"] ==userName:
-            subscrChannels = x["channels"]
-            break
-
-    print(f"user: {userName} and subscrChannels:{subscrChannels}")
-
-
-    # Extract the users subscribed to specific channels
-    # looping thru the list and extract the users list
-    for x in channel_users:
-        if x["channel"] ==currChannel:
-            channelUsers = x["users"]
-            break
-
-    #print(f"currChannel: {currChannel} and channelUsers:{channelUsers}")
-
-    # Extract the all messages for a given channel
-    # looping thru the list and extract the messages list
-    for x in channel_chatMessages:
-        if x["channel"] ==currChannel:
-            channelMessages = x["messages"]
-            break
-
-    #print(f"currChannel: {currChannel} and channelMessages:{channelMessages}")
-    return
-
-
 @app.route("/")
 def index():
     #return "Project 2: TODO"
-    #set the Initial User on Load.
-    # this may not be executed -
-    userName='user1'
+    #Redirect to Initial Page - up on load based on local storage it moves to default channel.
 
     # set current Channel
     currChannel = 'general'
     #re-load the lists to send as parameters
-    reload()
-    print(f"I'm in index method with channel list: {subscrChannels}")
-    return render_template("index.html", userName=userName, allChannels=channel_list, subscrChannels=subscrChannels, currentChannel= currChannel,channelUsers=channelUsers, channelChatMsgs=channelMessages )
+    print(f"I'm in index method with channel list: {channel_list}")
+    return render_template("index.html")
 
 
 @app.route("/<channel_ID>")
 def switchChannel(channel_ID):
-    #set the current channel to new Channel.
-    global currChannel
-    global userName
-
-    currChannel = channel_ID
-    #re-load the lists to send as parameters
-    reload()
-    print(f"I'm in switchChannel ChannelID:{channel_ID} with channel messages: {channelMessages[0]}")
-    channelDict={
-        "userName": userName,
-        "allChannels": channel_list,
-        "subscrChannels": subscrChannels,
-        "currentChannel": currChannel,
-        "channelUsers": channelUsers,
-        "channelChatMsgs": channelMessages
-    }
-    return jsonify (channelDict)
+    return '1'
 
 @app.route("/create", methods=["POST"])
 def createChannel():
@@ -159,7 +60,8 @@ def createChannel():
 
 @socketio.on("connect")
 def on_connect():
-    socketio.displayName=''
+    #socketio.displayName=''
+    session['username']=''
     print(f'Satya: serverside onconnect socket invoked - {request.sid}')
 
 @socketio.on("newMsg")
@@ -168,36 +70,63 @@ def on_newMsg(data):
     # Add the new Message to MessageHistory for a given channel
     global channel_chatMessages
     msgTime= datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p")
-    chatMsg = {'user':data["User"],'msgTime':msgTime, 'message':data["newMsg"]}
-    channel_chatMessages['channel'=='general']['messages'].append(chatMsg)
-    print(f"channel messages - {channel_chatMessages['channel'=='general']['messages']}")
+    chatMsg = {'user':session['username'],'msgTime':msgTime, 'message':data['newMsg']}
+    userRoom = session['room']
+    print(f"channel messages - {chatMsg} - {data['room']} -- {channel_chatMessages}")
 
     #Broadcast the message to the channel
-    emit("appendNewMsg",chatMsg, broadcast=True )
+    emit("appendNewMsg",chatMsg, broadcast=True, room=userRoom )
 
 @socketio.on("newUser")
 def on_newUser(data):
+    global channel_list
     print(f'Satya: serverside on on_newUser  - {data}')
     if data in users:
         return False
     else:
-        socketio.displayName=data
+        #request.displayName=data
         users.append(data)
+        session['username'] = data
+        if data[0] == 'C':
+            userRoom= channel_list[1]
+        else:
+            userRoom=channel_list[0]
+        session['room'] = userRoom
+        print(f'Satya: serverside on before join room  - {userRoom}')
+
+        join_room(userRoom)
+
+        #All Available Members
         emit("usernames", users, broadcast=True)
-        print(f'Satya: serverside on before return  - {socketio.displayName}')
+
+        # Channel specific users
+        emit("roomUsers", {'users':users, 'room':userRoom}, broadcast=True, room=userRoom)
+        return True
+
+#On creating the new Channels - Channels are not Room Specifc
+#It needs to be propogated to all users connected
+@socketio.on("newChannel")
+def on_newChannel(data):
+    global channel_list
+    print(f'Satya: serverside on on_newChannel  - {data}')
+    if data in channel_list:
+        return False
+    else:
+        channel_list.append(data)
+        #All Available Members
+        emit("channelList", channel_list, broadcast=True)
         return True
 
 @socketio.on("disconnect")
 def on_disconnect():
-    # update the userlist and re-boradcast the new userlist
-    if socketio.displayName in users:
-        users.remove(socketio.displayName)
-    print(f'Satya: serverside on disconnectUser -- {socketio.displayName}')
-    print(f'Satya: serverside on disconnectUser -- {users}')
+    if session['username'] in users:
+        users.remove(session['username'])
+    #print(f"Satya: serverside on disconnectUser -- {users}")
+    print(f"Satya: serverside on disconnectUser -- {session['username']}")
+    emit("usernames", users, broadcast=True)
 
+    # Channel specific users
+    userRoom = session['room']
+    emit("roomUsers", {'users':users, 'room':userRoom}, broadcast=True, room=userRoom)
 
-@socketio.on("disconnectUser")
-def on_disconnectUser(data):
-    global users
-    print(f'Satya: serverside on disconnectUser -- {data}')
 
