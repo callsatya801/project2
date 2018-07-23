@@ -18,8 +18,10 @@ users=[]
 
 # list of all channels
 channel_list = ['general','Channel2']
+
 #most recent messages -- 100
-channel_chatMessages = []
+#{'channelName':[{user:<username>,msgTime:<msgTime>,msg:<msg>}]}
+channel_chatMessages = {}
 
 # set current Channel
 currChannel = 'general'
@@ -117,6 +119,28 @@ def on_newChannel(data):
         #All Available Members
         emit("channelList", channel_list, broadcast=True)
         return True
+
+@socketio.on("switchRoom")
+def on_switchRoom(data):
+    print(f'Satya: serverside on switchRoom  - {data}')
+    # Add the new Message to MessageHistory for a given channel
+    global channel_chatMessages
+    # Trying to switch room from current room to same room - No action needed
+    if session['room'] == data:
+        return True
+    else:
+        #leave current room
+        leave_room(session['room'])
+
+        #set userRoom to new Room
+        session['room'] = data
+        #Join new room
+        join_room(data)
+        chatMessages = channel_chatMessages[data]
+        emit('switchRoomRefresh', {'channel':data, 'messages':chatMessages})
+        print(f"channel messages - {data} -- {chatMessages}")
+        return True
+
 
 @socketio.on("disconnect")
 def on_disconnect():

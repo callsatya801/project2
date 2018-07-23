@@ -64,6 +64,8 @@ document.addEventListener('DOMContentLoaded', () => {
                       const content = template({'id': id_to_Add, 'contents':data});
         	          element.innerHTML=content;
         	       }
+        	       // Set links up to load new pages.
+                    set_Your_channel_links();
                 }
           );
 
@@ -73,6 +75,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
           );
 
+        socket.on('switchRoomRefresh', data=>
+                    {
+                     console.log(`data received thru roomUsers - ${data.channel} -${data.messages} `);
+                }
+          );
     // Socket-io - specific code
 
     // set onDisplay Name form
@@ -171,8 +178,9 @@ function set_Your_channel_links()
         // Set links up to load new pages.
     document.querySelectorAll('.nav-link').forEach(link => {
         link.onclick = () => {
-            load_page(link.dataset.channelid);
-            console.log(link.dataset.channelid)
+            //load_page(link.dataset.channelid);
+            socket.emit('switchRoom',link.dataset.channelid);
+            console.log(link.dataset.channelid);
             return false;
         };
     });
