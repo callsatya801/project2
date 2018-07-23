@@ -15,13 +15,14 @@ socketio = SocketIO(app)
 
 # Global lists
 users=[]
+maxMessages = 10
 
 # list of all channels
-channel_list = ['general','Channel2']
+channel_list = ['general']
 
 #most recent messages -- 100
 #{'channelName':[{user:<username>,msgTime:<msgTime>,msg:<msg>}]}
-channel_chatMessages = {}
+channel_chatMessages = {'general':[]}
 
 # set current Channel
 currChannel = 'general'
@@ -37,29 +38,6 @@ def index():
     print(f"I'm in index method with channel list: {channel_list}")
     return render_template("index.html")
 
-
-@app.route("/<channel_ID>")
-def switchChannel(channel_ID):
-    return '1'
-
-@app.route("/create", methods=["POST"])
-def createChannel():
-    # append the new channel if valid to channel list
-    global channel_list
-
-    #get the new channelName
-    nChannel = request.form.get("newChannel")
-    print(f"Inside Create Routine - with form value - {nChannel}")
-
-
-    if nChannel in channel_list:
-        print(f"Inside Create Routine - with form value - {nChannel} - Success-false")
-        return jsonify({"success": False})
-    else:
-        channel_list.append(nChannel)
-        print(f"Inside Create Routine - with form value - {nChannel} - Success-true")
-        return jsonify({"success": True, "newChannel":nChannel})
-
 @socketio.on("connect")
 def on_connect():
     #socketio.displayName=''
@@ -72,9 +50,18 @@ def on_newMsg(data):
     print(f'Satya: serverside on newMsg  - {data}')
     # Add the new Message to MessageHistory for a given channel
     global channel_chatMessages
+    global maxMessages
+
     msgTime= datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p")
     chatMsg = {'user':session['username'],'msgTime':msgTime, 'message':data['newMsg']}
     userRoom = session['room']
+    #append the chat message.
+    #check the lenght of the channel messages - and remove the topelement if
+    #message count > 100
+    channel_chatMessages[userRoom].append(chatMsg)
+    if len(channel_chatMessages[userRoom]) > maxMessages:
+        channel_chatMessages[userRoom].pop(0)
+
     print(f"channel messages - {chatMsg} - {data['room']} -- {channel_chatMessages}")
 
     #Broadcast the message to the channel
@@ -83,6 +70,7 @@ def on_newMsg(data):
 @socketio.on("newUser")
 def on_newUser(data):
     global channel_list
+    global channel_chatMessages
     print(f'Satya: serverside on on_newUser  - {data}')
     if data in users:
         return False
@@ -90,10 +78,7 @@ def on_newUser(data):
         #request.displayName=data
         users.append(data)
         session['username'] = data
-        if data[0] == 'C':
-            userRoom= channel_list[1]
-        else:
-            userRoom=channel_list[0]
+        userRoom=channel_list[0]
         session['room'] = userRoom
         print(f'Satya: serverside on before join room  - {userRoom}')
 
@@ -101,6 +86,14 @@ def on_newUser(data):
 
         #All Available Members
         emit("usernames", users, broadcast=True)
+
+        #All Available Members
+        emit("channelList", channel_list, broadcast=True)
+
+        #Refresh the old messages to new User for a give channel
+        chatMessages = channel_chatMessages[userRoom]
+        emit('switchRoomRefresh', {'channel':userRoom, 'messages':chatMessages},room=userRoom)
+        #emit("refreshMsgHistory", channel_chatMessages[userRoom], broadcast=True, room=userRoom)
 
         # Channel specific users
         emit("roomUsers", {'users':users, 'room':userRoom}, broadcast=True, room=userRoom)
@@ -111,6 +104,7 @@ def on_newUser(data):
 @socketio.on("newChannel")
 def on_newChannel(data):
     global channel_list
+    global channel_chatMessages
     print(f'Satya: serverside on on_newChannel  - {data}')
     if data in channel_list:
         return False
@@ -118,6 +112,7 @@ def on_newChannel(data):
         channel_list.append(data)
         #All Available Members
         emit("channelList", channel_list, broadcast=True)
+        channel_chatMessages[data] =[]
         return True
 
 @socketio.on("switchRoom")
@@ -137,7 +132,7 @@ def on_switchRoom(data):
         #Join new room
         join_room(data)
         chatMessages = channel_chatMessages[data]
-        emit('switchRoomRefresh', {'channel':data, 'messages':chatMessages})
+        emit('switchRoomRefresh', {'channel':data, 'messages':chatMessages},room=data)
         print(f"channel messages - {data} -- {chatMessages}")
         return True
 

@@ -8,19 +8,31 @@ document.addEventListener('DOMContentLoaded', () => {
                     {
                      console.log(`data received thru appendNewMsg - ${data.user} -${data.msgTime} - ${data.message}`);
 
+                     htmlStr = `<text class="border-0 list-group-item flex-column align-items-start">
+                                <div class="d-flex w-100 ">
+                                  <small class="mb-0 font-weight-bold" style="padding-right:10px">${data.user}</small>
+                                  <small class="text-muted">(${data.msgTime})</small>
+                                </div>
+                                  <p style="font-size:120%">${data.message}</p>
+                                </text>`;
+
+                       //append the new message to the existing messages
+
+                     document.querySelector('#chatMsgList').innerHTML(htmlStr);
+
+
                      //append the new message to the existing messages
-                     const li = document.createElement('li');
-                     li.innerHTML = `<strong>${data.user}:</strong> <div class="text-muted">${data.msgTime}</div> <p class="card-text">${data.message}</p> `;
-                     document.querySelector('#chatMsgList').append(li);
+                     //const li = document.createElement('li');
+                     //li.innerHTML = `<strong>${data.user}:</strong> <div class="text-muted">${data.msgTime}</div> <p class="card-text">${data.message}</p> `;
+                     //document.querySelector('#chatMsgList').append(li);
 
                      //after adding new message - scroll
-                        scroll_chat_window();
-
+                      scroll_chat_window();
                     }
           );
 
         socket.on('usernames', data=>
-                    {
+                {
                      console.log(`data received thru usernames - ${data}`);
 
                      //Update the Users list - remove the Whole userlist and re-display
@@ -46,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Update Channel List
         socket.on('channelList', data=>
                     {
-                     console.log(`data received thru channelList - ${data}`);
+                    console.log(`data received thru channelList - ${data}`);
                     //Update the Channel list - remove the Whole userlist and re-display
                     var pId='#yChannels';
                     var pTemplate= '#t_yChannels';
@@ -63,9 +75,17 @@ document.addEventListener('DOMContentLoaded', () => {
                      // Add content to DOM.
                       const content = template({'id': id_to_Add, 'contents':data});
         	          element.innerHTML=content;
-        	       }
+        	        }
         	       // Set links up to load new pages.
-                    set_Your_channel_links();
+                   //set_Your_channel_links();
+                    document.querySelectorAll('button').forEach(button => {
+                    button.onclick = () => {
+                        //load_page(link.dataset.channelid);
+                        socket.emit('switchRoom',button.dataset.channelid);
+                        console.log(button.dataset.channelid);
+                        return false;
+                        };
+                    });
                 }
           );
 
@@ -76,6 +96,46 @@ document.addEventListener('DOMContentLoaded', () => {
           );
 
         socket.on('switchRoomRefresh', data=>
+                {
+                    console.log(`data received thru switchRoomRefresh - ${data.channel} -${data.messages} `);
+                    //Update the Title and Current Channel Display
+                    let title_element = document.querySelector('#title');
+                    if (title_element)
+                      {
+                          title_element.innerHTML=`Chatterbox - ${data.channel}`;
+                      }
+
+                    //Update Chat Window - Title
+                    let ctitle_element = document.querySelector('#currChannelHeader');
+                    if (ctitle_element)
+                      {
+                          ctitle_element.innerHTML=`Current #Channel#:<strong>${data.channel}</strong>`;
+                      }
+
+                    //find the message area and rebuilt from history
+                    var pId='#chatMessages';
+                    var pTemplate= '#t_cMsgs';
+                    var id_to_Add= 'chatMsgList';
+                	let element = document.querySelector(pId);
+
+        	        //if Element found remove the content- add the respective HadlebarTemplate and pass respective content
+        	        if(element)
+        	        {
+        	          //find the child element and remove
+        	          cElement = document.querySelector(id_to_Add);
+        	          if (cElement) {cElement.remove();}
+                      const template = Handlebars.compile(document.querySelector(pTemplate).innerHTML);
+                     // Add content to DOM.
+                      const content = template({'id': id_to_Add, 'contents':data.messages});
+        	          element.innerHTML=content;
+        	        }
+        	        //scroll to bottom of the messages
+        	        scroll_chat_window();
+                }
+             );
+
+
+        socket.on('switchRoomRefreshxx', data=>
                     {
                      console.log(`data received thru roomUsers - ${data.channel} -${data.messages} `);
                 }
@@ -152,14 +212,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                 });
+
                 //return false - enforce not to refresh the page
                 return false;
             };
      //scroll
      scroll_chat_window();
-
-     // Set links up to load new pages.
-     set_Your_channel_links();
 
 
 });
@@ -171,71 +229,4 @@ function scroll_chat_window()
 	element.scrollTop = element.scrollHeight;
 }
 
-// Set the Navigation Links - for Channels - Reset on each refresh
-function set_Your_channel_links()
-{
-       console.log('Inside set_Your_channel_links');
-        // Set links up to load new pages.
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.onclick = () => {
-            //load_page(link.dataset.channelid);
-            socket.emit('switchRoom',link.dataset.channelid);
-            console.log(link.dataset.channelid);
-            return false;
-        };
-    });
 
-};
-
-// Renders contents of new page in main view.
-function load_page(name) {
-    const request = new XMLHttpRequest();
-    request.open('GET', `/${name}`);
-    request.onload = () => {
-        const responseData= JSON.parse(request.responseText);
-        document.querySelector('#title').innerHTML = `Chatterbox - ${responseData.currentChannel}`;
-        document.querySelector('#currChannelHeader').innerHTML = `Current #Channel# - ${responseData.currentChannel}`;
-
-        var idList=['#chatMsgList', '#availableChannels', '#oUsers' ];
-        var i ;
-        for (i=0; i < idList.length; i++)
-        {
-        	console.log(idList[i]);
-        	let element = document.querySelector(idList[i]);
-        	console.log(element);
-        	if(element)
-        	  {element.remove(); };
-        };
-
-         //Loop thru the Parent IDs and add them to page along with child IDs
-        var pIdList=['#chatMessages', '#aChannels', '#usersArea' ];
-        var pTemplateList=['#t_cMsgs', '#t_aChannels' ,'#t_cMembers' ];
-        var idList_to_Add=['chatMsgList', 'availableChannels', 'oUsers' ];
-        var pContentList=[responseData.channelChatMsgs, responseData.allChannels, responseData.channelUsers];
-        for (i=0; i < pIdList.length; i++)
-        {
-        	console.log(pIdList[i]);
-        	let element = document.querySelector(pIdList[i]);
-        	console.log(element);
-
-        	//if Element found - add the respective HadlebarTemplate and pass respective content
-        	if(element)
-        	  {
-        	     console.log(pTemplateList[i]);
-                 const template = Handlebars.compile(document.querySelector(pTemplateList[i]).innerHTML);
-                 // Add content to DOM.
-                 const content = template({'id': idList_to_Add[i], 'contents':pContentList[i]});
-        	     element.innerHTML=content;
-        	  };
-        };
-
-        console.log(responseData);
-        var element = document.getElementById("chatMessages");
-	    element.scrollTop = element.scrollHeight;
-
-	    // Set links up to load new pages.
-        set_Your_channel_links();
-
-    };
-    request.send();
-}
