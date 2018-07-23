@@ -22,7 +22,71 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
           );
 
+        socket.on('usernames', data=>
+                    {
+                     console.log(`data received thru usernames - ${data}`);
+
+                     //Update the Users list - remove the Whole userlist and re-display
+                    var pId='#usersArea';
+                    var pTemplate= '#t_cMembers';
+                    var id_to_Add= 'oUsers';
+                	let element = document.querySelector(pId);
+
+        	        //if Element found remove the content- add the respective HadlebarTemplate and pass respective content
+        	        if(element)
+        	        {
+        	          //find the child element and remove
+        	          cElement = document.querySelector(id_to_Add);
+        	          if (cElement) {cElement.remove();}
+                      const template = Handlebars.compile(document.querySelector(pTemplate).innerHTML);
+                     // Add content to DOM.
+                      const content = template({'id': id_to_Add, 'contents':data});
+        	          element.innerHTML=content;
+        	       }
+                }
+          );
+
+
     // Socket-io - specific code
+
+    // set onDisplay Name form
+     document.querySelector('#setDisplayName').onsubmit = () => {
+           console.log('inside setDisplayName ');
+
+          const newUser = document.querySelector('#displayName').value;
+          // reset the value
+          document.querySelector('#displayName').value='';
+          socket.emit('newUser',newUser, function(conf){
+
+          console.log(`trying to find the conf: ${conf}`);
+           // use acknowledge to check if success/fail
+           if (conf)
+           {
+            //New User - successful
+            //Hide the Display User entry form and Display the Chat Area
+            document.querySelector('#displayNameArea').style.display="none";
+            document.querySelector('#pageArea').style.display="block";
+
+            document.querySelector('#dUserName').innerHTML=newUser;
+            console.log(`trying to set the value of new display name: ${newUser} for element ${elment}`);
+
+           }
+           else
+           {
+            //New User - Not successful
+            //Hide the Display User entry form and Display the Chat Area
+             document.querySelector('#dUserName').innerHTML='';
+
+            document.querySelector('#displayNameArea').style.display="block";
+            document.querySelector('#pageArea').style.display="none";
+            document.querySelector('#displayNameError').innerHTML="Display Username is already taken. Please try with NEW Display Name:"
+           }
+
+          });
+
+          //return false - enforce not to refresh the page
+          return false;
+      };
 
     // set onSubmit on Create New Channel
      document.querySelector('#chatMsgForm').onsubmit = () => {

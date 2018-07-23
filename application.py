@@ -14,6 +14,9 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 socketio = SocketIO(app)
 
 # Global lists
+users=[]
+
+
 subscrChannels=[]
 channelUsers=[]
 channelMessages=[]
@@ -27,12 +30,6 @@ userName='user1'
 
 # set current Channel
 currChannel = 'general'
-
-
-# list of all users
-users=[]
-for i in range(0,5):
-    users.append('user'+str(i))
 
 
 # list of all channels
@@ -162,6 +159,7 @@ def createChannel():
 
 @socketio.on("connect")
 def on_connect():
+    socketio.displayName=''
     print(f'Satya: serverside onconnect socket invoked - {request.sid}')
 
 @socketio.on("newMsg")
@@ -176,3 +174,30 @@ def on_newMsg(data):
 
     #Broadcast the message to the channel
     emit("appendNewMsg",chatMsg, broadcast=True )
+
+@socketio.on("newUser")
+def on_newUser(data):
+    print(f'Satya: serverside on on_newUser  - {data}')
+    if data in users:
+        return False
+    else:
+        socketio.displayName=data
+        users.append(data)
+        emit("usernames", users, broadcast=True)
+        print(f'Satya: serverside on before return  - {socketio.displayName}')
+        return True
+
+@socketio.on("disconnect")
+def on_disconnect():
+    # update the userlist and re-boradcast the new userlist
+    if socketio.displayName in users:
+        users.remove(socketio.displayName)
+    print(f'Satya: serverside on disconnectUser -- {socketio.displayName}')
+    print(f'Satya: serverside on disconnectUser -- {users}')
+
+
+@socketio.on("disconnectUser")
+def on_disconnectUser(data):
+    global users
+    print(f'Satya: serverside on disconnectUser -- {data}')
+
