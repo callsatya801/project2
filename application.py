@@ -62,6 +62,7 @@ def createChannel():
 def on_connect():
     #socketio.displayName=''
     session['username']=''
+    session['room']=''
     print(f'Satya: serverside onconnect socket invoked - {request.sid}')
 
 @socketio.on("newMsg")
