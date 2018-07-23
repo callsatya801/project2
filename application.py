@@ -72,13 +72,17 @@ def on_newUser(data):
     global channel_list
     global channel_chatMessages
     print(f'Satya: serverside on on_newUser  - {data}')
-    if data in users:
+    if data["User"] in users:
         return False
     else:
         #request.displayName=data
-        users.append(data)
-        session['username'] = data
-        userRoom=channel_list[0]
+        users.append(data["User"])
+        session['username'] = data["User"]
+        #check if user local storage channel exists
+        if data["channel"] in channel_list:
+            userRoom= data["channel"]
+        else:
+            userRoom=channel_list[0]
         session['room'] = userRoom
         print(f'Satya: serverside on before join room  - {userRoom}')
 
@@ -149,4 +153,7 @@ def on_disconnect():
     userRoom = session['room']
     emit("roomUsers", {'users':users, 'room':userRoom}, broadcast=True, room=userRoom)
 
-
+# handles all namespaces without an explicit error handler
+@socketio.on_error_default
+def default_error_handler(e):
+    pass

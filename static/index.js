@@ -4,21 +4,33 @@ document.addEventListener('DOMContentLoaded', () => {
     // Connect to websocket
       var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
 
+      //check localStorageVariable - User and initail channel
+      if (localStorage.getItem('lsUser'))
+      {   var lsUser=localStorage.getItem('lsUser');
+          //default current channel to general
+          var lsCurrChannel='general';
+          if(localStorage.getItem('lsCurrChannel'))
+          {
+              lsCurrChannel=localStorage.getItem('lsCurrChannel');
+          }
+          setInitialUser(socket, lsUser,lsCurrChannel);
+      }
+
        socket.on('appendNewMsg', data=>
                     {
                      console.log(`data received thru appendNewMsg - ${data.user} -${data.msgTime} - ${data.message}`);
 
-                     htmlStr = `<text class="border-0 list-group-item flex-column align-items-start">
-                                <div class="d-flex w-100 ">
+                     htmlStr = `<div class="d-flex w-100 ">
                                   <small class="mb-0 font-weight-bold" style="padding-right:10px">${data.user}</small>
                                   <small class="text-muted">(${data.msgTime})</small>
                                 </div>
-                                  <p style="font-size:120%">${data.message}</p>
-                                </text>`;
+                                  <p style="font-size:120%">${data.message}</p>`;
 
                        //append the new message to the existing messages
-
-                     document.querySelector('#chatMsgList').innerHTML(htmlStr);
+                     const textElement = document.createElement('text');
+                     textElement.className="border-0 list-group-item flex-column align-items-start";
+                     textElement.innerHTML=htmlStr;
+                     document.querySelector('#chatMsgList').appendChild(textElement);
 
 
                      //append the new message to the existing messages
@@ -82,6 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     button.onclick = () => {
                         //load_page(link.dataset.channelid);
                         socket.emit('switchRoom',button.dataset.channelid);
+
                         console.log(button.dataset.channelid);
                         return false;
                         };
@@ -110,6 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (ctitle_element)
                       {
                           ctitle_element.innerHTML=`Current #Channel#:<strong>${data.channel}</strong>`;
+                          //set localStorge
+                          localStorage.setItem('lsCurrChannel',data.channel);
                       }
 
                     //find the message area and rebuilt from history
@@ -149,33 +164,8 @@ document.addEventListener('DOMContentLoaded', () => {
           const newUser = document.querySelector('#displayName').value;
           // reset the value
           document.querySelector('#displayName').value='';
-          socket.emit('newUser',newUser, function(conf){
 
-          console.log(`trying to find the conf: ${conf}`);
-           // use acknowledge to check if success/fail
-           if (conf)
-           {
-            //New User - successful
-            //Hide the Display User entry form and Display the Chat Area
-            document.querySelector('#displayNameArea').style.display="none";
-            document.querySelector('#pageArea').style.display="block";
-
-            document.querySelector('#dUserName').innerHTML=newUser;
-            console.log(`trying to set the value of new display name: ${newUser}`);
-
-           }
-           else
-           {
-            //New User - Not successful
-            //Hide the Display User entry form and Display the Chat Area
-             document.querySelector('#dUserName').innerHTML='';
-
-            document.querySelector('#displayNameArea').style.display="block";
-            document.querySelector('#pageArea').style.display="none";
-            document.querySelector('#displayNameError').innerHTML="Display Username is already taken. Please try with NEW Display Name:"
-           }
-
-          });
+          setInitialUser(socket, newUser,'general');
 
           //return false - enforce not to refresh the page
           return false;
@@ -230,3 +220,34 @@ function scroll_chat_window()
 }
 
 
+function setInitialUser (socket,iUser,iChannel )
+{
+          socket.emit('newUser',{'User':iUser,'channel':iChannel}, function(conf){
+
+          console.log(`trying to find the conf: ${conf}`);
+           // use acknowledge to check if success/fail
+           if (conf)
+           {
+            //New User - successful
+            //Hide the Display User entry form and Display the Chat Area
+            document.querySelector('#displayNameArea').style.display="none";
+            document.querySelector('#pageArea').style.display="block";
+
+            document.querySelector('#dUserName').innerHTML=iUser;
+            console.log(`trying to set the value of new display name: ${iUser}`);
+            //set local storage variable for User
+            localStorage.setItem('lsUser',iUser);
+           }
+           else
+           {
+            //New User - Not successful
+            //Hide the Display User entry form and Display the Chat Area
+             document.querySelector('#dUserName').innerHTML='';
+
+            document.querySelector('#displayNameArea').style.display="block";
+            document.querySelector('#pageArea').style.display="none";
+            document.querySelector('#displayNameError').innerHTML="Display Username is already taken. Please try with NEW Display Name:"
+           }
+
+          });
+}
