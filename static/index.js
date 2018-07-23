@@ -33,11 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
                      document.querySelector('#chatMsgList').appendChild(textElement);
 
 
-                     //append the new message to the existing messages
-                     //const li = document.createElement('li');
-                     //li.innerHTML = `<strong>${data.user}:</strong> <div class="text-muted">${data.msgTime}</div> <p class="card-text">${data.message}</p> `;
-                     //document.querySelector('#chatMsgList').append(li);
-
                      //after adding new message - scroll
                       scroll_chat_window();
                     }
@@ -99,12 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         return false;
                         };
                     });
-                }
-          );
-
-        socket.on('roomUsers', data=>
-                    {
-                     console.log(`data received thru roomUsers - ${data}`);
                 }
           );
 
