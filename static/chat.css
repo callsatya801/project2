@@ -78,3 +78,7 @@
 #pageArea {
  display:none;
 }
+
+ul{
+list-style-type:none;
+}

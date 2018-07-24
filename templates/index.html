@@ -2,14 +2,15 @@
 <!-- Banner Navigationbar -->
 <nav class="navbar navbar-dark sticky-top bg-primary flex-md-nowrap p-0">
     <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#"><i class="material-icons">group</i> Chatterbox</a>
-    <span class="navbar-text text-white" style="padding-right: 30px;"><i class="material-icons">person</i>User: <b id="dUserName"></b></span>
+    <span class="navbar-text text-white" style="padding-right: 30px;"><i class="material-icons">account_circle</i>User: <b id="dUserName"></b></span>
 </nav>
 <!-- container for page Navigationbar -->
 <div id="pageAreaTop" class="container-fluid">
     <div class="row">
         <div id="displayNameArea">
+            <div id="displayNameError" class="alert alert-danger" role="alert">
+            </div>
             <p>Enter the Display Name:</p>
-            <p id="displayNameError"></p>
             <form id="setDisplayName">
                 <input size="50" id="displayName" placeholder="Enter Display Name here..." />
                 <input type="submit" value="submit" />
@@ -59,20 +60,25 @@
                 <nav class="navbar ml-sm-auto col-lg-10 fixed-bottom navbar-light bg-light">
                     <form id="chatMsgForm">
                         <div class="input-group">
-                            <input id="newChatMsg" class="form-control input-lg" placeholder="Enter message here ...." type="text">
+                            <input id="newChatMsg" class="form-control mr-sm-2 input-lg" placeholder="Enter message here ...." type="text">
                             <div class="input-group-append">
-                                <input class="btn btn-outline-secondary" type="submit" value="Send" />
-                            </div>
-                            <div>
-                                <text id="gMsgArea"></text>
+                                <input class="btn btn-outline-secondary my-2 my-sm-0" type="submit" value="Send" />
                             </div>
                         </div>
                     </form>
+                            <span class="navbar-text alert alert-info">
+                              To send private message - start message with <strong>/p:userName:privateMessage</strong>
+                             </span>
+
+                            <div id="gMsgArea">
+
+                            </div>
+
                 </nav>
             </div>
             <div class="col-2 pt-3 px-1">
                 <div class="card border-0 card text-white bg-info mb-3" style="height: 87vh;">
-                    <div class="card-header h5">Members:</div>
+                    <div class="card-header h5">Online Users:</div>
                     <div id="usersArea" class="card-body">
                         <ul id="oUsers">
                         </ul>

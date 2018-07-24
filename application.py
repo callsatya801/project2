@@ -48,12 +48,18 @@ def on_newMsg(data):
     global channel_chatMessages
     global maxMessages
 
-    msgTime= datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p")
+    nMsg = data['newMsg'].strip();
+    if len(nMsg)==0:
+        return False
+
+    #msgTime= datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p")
+    msgTime= datetime.datetime.now().strftime("%a %-I:%M %p")
+
     user = session['username']
 
     isPrivateMsg = False
     #Check if new Message is a private message
-    nMsg = data['newMsg'].strip();
+
     if(nMsg[0:3]=='/p:'):
         nMsg = nMsg[3:]
         isPrivateMsg=True

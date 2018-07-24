@@ -32,7 +32,7 @@
     {% raw -%}
         <ul id="{{ id }}">
                   {{#each contents}}
-                  <li> <b>{{this}}</b> </li>
+                  <li> <i class="material-icons">person</i> <b>{{this}}</b> </li>
                   {{/each}}
           </ul>
     {%- endraw %}
@@ -43,16 +43,17 @@
     <script id="t_cMsgs" type="text/template">
     {% raw -%}
        <div id="{{ id }}" class="list-group">
-                  {{#each contents}}
-                  <text class="border-0 list-group-item flex-column align-items-start">
-                  <div class="d-flex w-100 ">
-                                <small class="mb-0 font-weight-bold" style="padding-right:10px">{{this.user}}</small>
-                                <small class="text-muted">({{this.msgTime}})</small>
-                            </div>
-                            <p style="font-size:120%">{{this.message}}</p>
-                        </text>
-                  {{/each}}
-          </div>
+            {{#each contents}}
+            <div class="card w-100">
+                <div class="card-body">
+                 <p class="card-title mb-0 font-weight-bold" style="padding-right:10px"><strong>{{this.user}}</strong>
+                    <small class="text-muted">({{this.msgTime}})</small>
+                 </p>
+                 <p class="card-text">{{this.message}}</p>
+                </div>
+            </div>
+            {{/each}}
+        </div>
 
     {%- endraw %}
     </script>
@@ -60,9 +61,10 @@
     <!-- User Channels (Your Channels) -->
     <script id="t_yChannels" type="text/template">
     {% raw -%}
-        <div id="{{ id }}" class="input-group">
+        <div id="{{ id }}" class="btn-group-vertical btn-group-lg" style="width:100%" role="group">
                   {{#each contents}}
-                    <button class="btn btn-outline-secondary" data-channelid="{{this}}">{{this}}</button>
+                    <button class="btn btn-outline-secondary" data-channelid="{{this}}">
+                    <i class="material-icons">meeting_room</i>{{this}}</button>
                   {{/each}}
           </div>
     {%- endraw %}

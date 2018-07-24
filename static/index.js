@@ -20,11 +20,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     {
                      console.log(`data received thru appendNewMsg - ${data.user} -${data.msgTime} - ${data.message}`);
 
-                     htmlStr = `<div class="d-flex w-100 ">
-                                  <small class="mb-0 font-weight-bold" style="padding-right:10px">${data.user}</small>
-                                  <small class="text-muted">(${data.msgTime})</small>
-                                </div>
-                                  <p style="font-size:120%">${data.message}</p>`;
+
+
+
+                     htmlStr = `<div class="card w-100">
+                                 <div class="card-body">
+                                    <p class="card-title mb-0 font-weight-bold" style="padding-right:10px"><strong>${data.user}</strong>
+                                        <small class="text-muted">(${data.msgTime})</small>
+                                    </p>
+                                    <p class="card-text">${data.message}</p>
+                                 </div>
+                                </div>`;
 
                        //append the new message to the existing messages
                      const textElement = document.createElement('text');
