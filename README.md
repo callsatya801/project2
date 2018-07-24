@@ -33,6 +33,8 @@ Milestone 3
 Remembering the Channel: If a user is on a channel page, closes the web browser window, and goes back to your web application,
 your application should remember what channel the user was on previously and take the user back to that channel.
 >>> able to acheive this using LocalStorage. Updating the local storage on newUsers and swithcing the channel to store the current channel
+>>> User is forced to Login with another display name if more than one instance of same browser is used.
+>>> LocalStorage - stores most recent display name and its channel
 
 Personal Touch: Add at least one additional feature to your chat application of your choosing! Feel free to be creative,
 but if you’re looking for ideas, possibilities include: supporting deleting one’s own messages,

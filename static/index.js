@@ -19,10 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
        socket.on('appendNewMsg', data=>
                     {
                      console.log(`data received thru appendNewMsg - ${data.user} -${data.msgTime} - ${data.message}`);
-
-
-
-
                      htmlStr = `<div class="card w-100">
                                  <div class="card-body">
                                     <p class="card-title mb-0 font-weight-bold" style="padding-right:10px"><strong>${data.user}</strong>
@@ -141,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     let ctitle_element = document.querySelector('#currChannelHeader');
                     if (ctitle_element)
                       {
-                          ctitle_element.innerHTML=`Current #Channel#:<strong>${data.channel}</strong>`;
+                          ctitle_element.innerHTML=`You are in Channel# : <strong>${data.channel}</strong>`;
                           //set localStorge
                           localStorage.setItem('lsCurrChannel',data.channel);
                       }
