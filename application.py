@@ -16,6 +16,7 @@ socketio = SocketIO(app)
 # Global lists
 users=[]
 maxMessages = 100
+userSID = {}
 
 # list of all channels
 channel_list = ['general']
@@ -48,7 +49,38 @@ def on_newMsg(data):
     global maxMessages
 
     msgTime= datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p")
-    chatMsg = {'user':session['username'],'msgTime':msgTime, 'message':data['newMsg']}
+    user = session['username']
+
+    isPrivateMsg = False
+    #Check if new Message is a private message
+    nMsg = data['newMsg'].strip();
+    if(nMsg[0:3]=='/p:'):
+        nMsg = nMsg[3:]
+        isPrivateMsg=True
+        print(f" In message - a private message {nMsg}")
+
+        #Remove any white spaces between UserName
+        nMsg = nMsg.strip()
+        idx = nMsg.find(':')
+        if(idx != -1):
+            pUserName=nMsg[0:idx]
+            nMsg = nMsg[idx+1:]
+
+            # Remove any white spaces after userName - for message
+            nMsg = nMsg.strip()
+            print(f"User extracted - {pUserName} with Message - {nMsg}")
+
+    chatMsg = {'user':user,'msgTime':msgTime, 'message':nMsg}
+    if isPrivateMsg:
+        #check if user exists - if exists
+        if pUserName in userSID:
+            print(f" user exists in UserSID - with ID: {userSID[pUserName]}")
+            emit("privateMsg",chatMsg, room=userSID[pUserName])
+            return
+        else:
+            print(f" user Does not exist in UserSID")
+            return
+
     userRoom = session['room']
 
     #append the chat message.
@@ -61,17 +93,26 @@ def on_newMsg(data):
     #Broadcast the message to the channel
     emit("appendNewMsg",chatMsg, broadcast=True, room=userRoom )
 
+
 @socketio.on("newUser")
 def on_newUser(data):
     global channel_list
     global channel_chatMessages
     print(f'Satya: serverside on on_newUser  - {data}')
-    if data["User"] in users:
+    l_newUser = data["User"].strip();
+    if len(l_newUser)==0:
+        return False
+
+    if l_newUser in users:
         return False
     else:
         #request.displayName=data
-        users.append(data["User"])
-        session['username'] = data["User"]
+        users.append(l_newUser)
+
+        #store request SID against user to send private messages
+        userSID[l_newUser]=request.sid
+
+        session['username'] = l_newUser
         #check if user local storage channel exists
         if data["channel"] in channel_list:
             userRoom= data["channel"]
@@ -101,14 +142,19 @@ def on_newChannel(data):
     global channel_list
     global channel_chatMessages
 
-    if data in channel_list:
+    l_newChannel = data.strip();
+    if len(l_newChannel)==0:
+        return False
+
+
+    if l_newChannel in channel_list:
         return False
     else:
-        channel_list.append(data)
+        channel_list.append(l_newChannel)
 
         #All Available Members
         emit("channelList", channel_list, broadcast=True)
-        channel_chatMessages[data] =[]
+        channel_chatMessages[l_newChannel] =[]
         return True
 
 @socketio.on("switchRoom")
@@ -136,9 +182,10 @@ def on_switchRoom(data):
 def on_disconnect():
     if session['username'] in users:
         users.remove(session['username'])
+        userSID.pop(session['username'])
 
     emit("usernames", users, broadcast=True)
-
+    print(f" User - {session['username']} is leaving on-disconnect")
     # Channel specific users
     userRoom = session['room']
     emit("roomUsers", {'users':users, 'room':userRoom}, broadcast=True, room=userRoom)

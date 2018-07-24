@@ -38,7 +38,11 @@ Personal Touch: Add at least one additional feature to your chat application of 
 but if you’re looking for ideas, possibilities include: supporting deleting one’s own messages,
 supporting use attachments (file uploads) as messages, or supporting private messaging between two users.
 Other ideas are certainly possible. If unsure of whether your idea for a personal touch would qualify, contact your teaching fellow for input!
->>
+>> Implemented Private Message
+>> Instructions: To send private message - start message with /p:<userName>:<privateMessage>
+>> eg: /p:Satya:newPrivateMessage OR /p: Satya: newPrivateMessage
+>> Private Messages are not stored and will not be available after refresh. Only channel messages are stored.
+
 
 
 Other Info:

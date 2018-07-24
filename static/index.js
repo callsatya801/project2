@@ -38,6 +38,30 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
           );
 
+
+       socket.on('privateMsg', data=>
+                    {
+                     console.log(`data received thru privateMsg - ${data.user} -${data.msgTime} - ${data.message}`);
+
+                     htmlStr = `<div class="d-flex w-100 ">
+                                  <small class="mb-0 font-weight-bold" style="padding-right:10px">${data.user}</small>
+                                  <small class="text-muted">(${data.msgTime})</small>
+                                </div>
+                                  <p class="text-muted" style="font-size:120%"><b>Private Message:</b><i>${data.message}</i></p>`;
+
+                       //append the new message to the existing messages
+                     const textElement = document.createElement('text');
+                     textElement.className="border-0 list-group-item flex-column align-items-start";
+                     textElement.innerHTML=htmlStr;
+                     document.querySelector('#chatMsgList').appendChild(textElement);
+
+
+                     //after adding new message - scroll
+                      scroll_chat_window();
+                    }
+          );
+
+
         socket.on('usernames', data=>
                 {
                      console.log(`data received thru usernames - ${data}`);
@@ -167,7 +191,8 @@ document.addEventListener('DOMContentLoaded', () => {
           const nChatMsg = document.querySelector('#newChatMsg').value;
           // reset the value
           document.querySelector('#newChatMsg').value='';
-          socket.emit('newMsg',{'room':'general','newMsg':nChatMsg });
+
+          socket.emit('newMsg',{'newMsg':nChatMsg });
 
           //return false - enforce not to refresh the page
           return false;
